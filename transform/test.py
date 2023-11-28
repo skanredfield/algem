@@ -1,17 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from functools import wraps
 import time
 from fourier import *
 
 # https://stackoverflow.com/questions/15707056/get-time-of-execution-of-a-block-of-code-in-python-2-7
-def time_usage(func):
-    def wrapper(*args, **kwargs):
-        beg_ts = time.time()
-        retval = func(*args, **kwargs)
-        end_ts = time.time()
-        print("Elapsed time: %f" % (end_ts - beg_ts))
-        return retval
-    return wrapper
+# https://stackoverflow.com/questions/5929107/decorators-with-parameters
+def time_usage(label):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            beg_ts = time.time()
+            retval = func(*args, **kwargs)
+            end_ts = time.time()
+            print("(%s) Elapsed time: %f" % (label, (end_ts - beg_ts)))
+            return retval
+        return wrapper
+    return decorator
+
 
 N = 1024
 
@@ -36,34 +42,33 @@ freqvals -= (N/2) * delta_f                     # shift half to center on 0 and 
 
 
 
-fig, ax = plt.subplots(3, 1)
+fig, ax = plt.subplots(4, 1)
+
+def plot(axis, title, xlabel, ylabel, xs, ys):
+    axis.set_title(title)
+    axis.set_xlabel(xlabel)
+    axis.set_ylabel(ylabel)
+    axis.plot(xs, ys, '.')
 
 def plot_time_function():
-    ax[0].set_title("f(t)")
-    ax[0].set_xlabel("Time (seconds)")
-    ax[0].set_ylabel("Amplitude")
-    ax[0].plot(tvals, f_t, '.')
+    plot(ax[0], "f(t)", "Time (seconds)", "Amplitude", tvals, f_t)
 
-@time_usage
+@time_usage("DFT")
 def plot_dft():
-    ax[1].set_title("dft(f)")
-    ax[1].set_xlabel("Frequency")
-    ax[1].set_ylabel("Re(dft(f))")
-    print("DFT:")
-    ax[1].plot(freqvals, fourier_shift(dft_matrix(f_t)), '.')
+    plot(ax[1], "dft(f)", "Frequency", "Re(dft(f))", freqvals, fourier_shift(dft_matrix(f_t)))
 
-@time_usage
+@time_usage("FFT")
 def plot_fft():
-    ax[2].set_title("fft(f)")
-    ax[2].set_xlabel("Frequency")
-    ax[2].set_ylabel("Re(fft(f))")
-    print("FFT:")
-    # fft(f_t)
-    ax[2].plot(freqvals, fourier_shift(fft(f_t)), '.')
+    plot(ax[2], "fft(f)", "Frequency", "Re(fft(f))", freqvals, fourier_shift(fft(f_t)))
+
+@time_usage("IFFT")
+def plot_ifft():
+    plot(ax[3], "ifft(f)", "Time (seconds)", "Amplitude", tvals, ifft(fft(f_t)))
 
 plot_time_function()
 plot_dft()
 plot_fft()
+plot_ifft()
 
 fig.tight_layout()
 plt.show()

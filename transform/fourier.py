@@ -37,7 +37,7 @@ def fft(f):
         return f
     f_even, f_odd = f[0::2], f[1::2]
     y_even, y_odd = fft(f_even), fft(f_odd)
-    y = [0] * n
+    y = [0j] * n
     w = np.exp(2j * np.pi / n)
     half_n = int(n/2)
     for i in range(half_n):
@@ -52,7 +52,7 @@ def ifft(f):
         return f
     f_even, f_odd = f[0::2], f[1::2]
     y_even, y_odd = ifft(f_even), ifft(f_odd)
-    y = [0] * n
+    y = [0j] * n
     w = np.exp(-2j * np.pi / n)
     half_n = int(n/2)
     for i in range(half_n):
@@ -67,7 +67,7 @@ print(ifft(fft([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])))
 def fourier_shift(ft):
     n = len(ft)
     half_n = int(n/2)
-    new_dft = np.zeros(n)
+    new_dft = [0j] * n
     for i in range(0, half_n):
         new_dft[i] = ft[half_n - i]
     for i in range(half_n + 1, n):
